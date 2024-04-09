@@ -16,18 +16,7 @@ public class DNSServer {
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length);
                 server.receive(request);
                 DNSMessage message = new DNSMessage(request.getData());
-                
-                // If message is not a type A request we ignore the request and continue
-                if (!message.isTypeA()) {
-                    System.out.println("Request denied: Not Type-A Request");
-                    continue;
-                } else if(!message.isValidHostName()) {
-                	System.out.println("Request denied: Not A Valid Domain Name");
-                	continue;
-                }
-
                 byte[] response = message.getResponse();
-                
                 DatagramPacket responsePacket = new DatagramPacket(response, response.length, request.getAddress(), request.getPort());
                 server.send(responsePacket);
                 System.out.println("Packet sent");
