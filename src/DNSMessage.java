@@ -9,7 +9,6 @@ public class DNSMessage {
 	private byte[] querySection;
 	private byte[] answerSection;
 	private byte[] domainBytes;
-	private byte[] rData;
 	private byte[] responseMessage;
 	
 	private short questionCount;
@@ -107,41 +106,37 @@ public class DNSMessage {
 	}
 
 	private void initializeAnswerSection() {
-		// Calculating total length of the answer section
-		int totalLength = name.length() + 2 + 2 + 4 + 2 + RDLENGTH;
+	    // Creating byte array for the answer section
+	    int totalLength = 12 + RDLENGTH;
+	    answerSection = new byte[totalLength];
+	    int index = 0;
+	    
+	    // Name field (Pointer, 2 bytes)
+	    answerSection[index++] = (byte) 0xc0;
+	    answerSection[index++] = (byte) 0x0c;
+	    // Type field (2 bytes)
+	    answerSection[index++] = (byte) ((QTYPE >> 8) & 0xFF);
+	    answerSection[index++] = (byte) (QTYPE & 0xFF);
+	    // Class field (2 bytes)
+	    answerSection[index++] = (byte) ((QCLASS >> 8) & 0xFF);
+	    answerSection[index++] = (byte) (QCLASS & 0xFF);
+	    // TTL field (4 bytes)
+	    answerSection[index++] = (byte) ((TTL >> 24) & 0xFF);
+	    answerSection[index++] = (byte) ((TTL >> 16) & 0xFF);
+	    answerSection[index++] = (byte) ((TTL >> 8) & 0xFF);
+	    answerSection[index++] = (byte) (TTL & 0xFF);
+	    // Data length field (2 bytes)
+	    answerSection[index++] = (byte) ((RDLENGTH >> 8) & 0xFF);
+	    answerSection[index++] = (byte) (RDLENGTH & 0xFF);
 
-		// Creating byte array for the answer section
-		answerSection = new byte[totalLength];
+	    // Converting IP address to byte array
+	    String[] addressParts = address.split("\\."); // Period delimiter
+	    // Address field, (4 bytes for Ipv4)
+	    for (int i = 0; i < RDLENGTH; i++) {
+	    	answerSection[index++] = (byte) (Integer.parseInt(addressParts[i]) & 0xFF); 
+	    } // End of for
 
-		// Copying data into the byte array
-		int index = 0;
-		for (char c : name.toCharArray()) {
-			answerSection[index++] = (byte) c;
-		}
-		
-		answerSection[index++] = 0; // End of name
-		answerSection[index++] = (byte) (QTYPE >> 8);
-		answerSection[index++] = (byte) QTYPE;
-		answerSection[index++] = (byte) (QCLASS >> 8);
-		answerSection[index++] = (byte) QCLASS;
-		answerSection[index++] = (byte) (TTL >> 24);
-		answerSection[index++] = (byte) (TTL >> 16);
-		answerSection[index++] = (byte) (TTL >> 8);
-		answerSection[index++] = (byte) TTL;
-		answerSection[index++] = (byte) (RDLENGTH >> 8);
-		answerSection[index++] = (byte) RDLENGTH;
-		
-		String[] addressParts = address.split(".");
-		rData = new byte[addressParts.length];
-		
-		for (int i = 0; i < rData.length; i++) {
-		    rData[i] = (byte) Integer.parseInt(addressParts[i]);
-		}
-		
-		for (byte b : rData) {
-			answerSection[index++] = b;
-		}
-	}
+	} // End of method initializeAnswerSection
 
 	// Method to get the domain from the DNS request
 	private String getDomain(int offset) {
