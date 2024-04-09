@@ -40,6 +40,14 @@ public class DNSMessage {
 	private String address;
 	private short rCode;
 
+	private static final HashMap<String, String> addressList = new HashMap<String, String>();
+
+	static {
+		addressList.put("key1", "ip");
+		addressList.put("key2", "ip");
+		addressList.put("key3", "ip");
+	}
+
 	// Constructor
 	public DNSMessage(byte[] data) {
 		this.data = data;
@@ -103,40 +111,40 @@ public class DNSMessage {
 	} // End of method initializeQuerySection
 
 	private void initializeAnswerSection() {
-		if(rCode != 0) { // If response is not 0, we do not add an answer section
+		if (rCode != 0) { // If response is not 0, we do not add an answer section
 			answerSection = new byte[0];
 			return;
 		} // End of if
 
-	    // Creating byte array for the answer section
-	    int totalLength = 12 + RDLENGTH;
-	    answerSection = new byte[totalLength];
-	    int index = 0;
-	    
-	    // Name field (Pointer, 2 bytes)
-	    answerSection[index++] = (byte) 0xc0;
-	    answerSection[index++] = (byte) 0x0c;
-	    // Type field (2 bytes)
-	    answerSection[index++] = (byte) ((QTYPE >> 8) & 0xFF);
-	    answerSection[index++] = (byte) (QTYPE & 0xFF);
-	    // Class field (2 bytes)
-	    answerSection[index++] = (byte) ((QCLASS >> 8) & 0xFF);
-	    answerSection[index++] = (byte) (QCLASS & 0xFF);
-	    // TTL field (4 bytes)
-	    answerSection[index++] = (byte) ((TTL >> 24) & 0xFF);
-	    answerSection[index++] = (byte) ((TTL >> 16) & 0xFF);
-	    answerSection[index++] = (byte) ((TTL >> 8) & 0xFF);
-	    answerSection[index++] = (byte) (TTL & 0xFF);
-	    // Data length field (2 bytes)
-	    answerSection[index++] = (byte) ((RDLENGTH >> 8) & 0xFF);
-	    answerSection[index++] = (byte) (RDLENGTH & 0xFF);
+		// Creating byte array for the answer section
+		int totalLength = 12 + RDLENGTH;
+		answerSection = new byte[totalLength];
+		int index = 0;
 
-	    // Converting IP address to byte array
-	    String[] addressParts = address.split("\\."); // Period delimiter
-	    // Address field, (4 bytes for Ipv4)
-	    for (int i = 0; i < RDLENGTH; i++) {
-	    	answerSection[index++] = (byte) (Integer.parseInt(addressParts[i]) & 0xFF); 
-	    } // End of for
+		// Name field (Pointer, 2 bytes)
+		answerSection[index++] = (byte) 0xc0;
+		answerSection[index++] = (byte) 0x0c;
+		// Type field (2 bytes)
+		answerSection[index++] = (byte) ((QTYPE >> 8) & 0xFF);
+		answerSection[index++] = (byte) (QTYPE & 0xFF);
+		// Class field (2 bytes)
+		answerSection[index++] = (byte) ((QCLASS >> 8) & 0xFF);
+		answerSection[index++] = (byte) (QCLASS & 0xFF);
+		// TTL field (4 bytes)
+		answerSection[index++] = (byte) ((TTL >> 24) & 0xFF);
+		answerSection[index++] = (byte) ((TTL >> 16) & 0xFF);
+		answerSection[index++] = (byte) ((TTL >> 8) & 0xFF);
+		answerSection[index++] = (byte) (TTL & 0xFF);
+		// Data length field (2 bytes)
+		answerSection[index++] = (byte) ((RDLENGTH >> 8) & 0xFF);
+		answerSection[index++] = (byte) (RDLENGTH & 0xFF);
+
+		// Converting IP address to byte array
+		String[] addressParts = address.split("\\."); // Period delimiter
+		// Address field, (4 bytes for Ipv4)
+		for (int i = 0; i < RDLENGTH; i++) {
+			answerSection[index++] = (byte) (Integer.parseInt(addressParts[i]) & 0xFF);
+		} // End of for
 
 	} // End of method initializeAnswerSection
 
@@ -164,10 +172,15 @@ public class DNSMessage {
 	} // End of method getDomain
 
 	private String getAddress(String domain) {
+		if (addressList.containsKey(name)) {
+			isValidHost = true;
+			return addressList.get(name);
+		}
+
 		String addressFromDomain;
 		try {
 			addressFromDomain = InetAddress.getByName(domain).getHostAddress();
-			if(domain.toLowerCase().endsWith("arpa") || domain.toLowerCase().endsWith("home")) {
+			if (domain.toLowerCase().endsWith("arpa") || domain.toLowerCase().endsWith("home")) {
 				isValidHost = false;
 				return null;
 			}
@@ -204,7 +217,7 @@ public class DNSMessage {
 		if (data.length < 12) {
 			return false;
 		} // End of if
-		// Checking for 00 01 00 01 sequence to determine if request is type A or not
+			// Checking for 00 01 00 01 sequence to determine if request is type A or not
 		int queryTypePosition = 12;
 		while (queryTypePosition + 4 <= data.length) {
 			if (data[queryTypePosition] == 0x00 && data[queryTypePosition + 1] == 0x01
@@ -233,18 +246,20 @@ public class DNSMessage {
 		name = this.getDomain(12);
 		address = this.getAddress(name);
 
-		if(isTypeAReq & isValidHost) { // Type A and address is not null
+		if (isTypeAReq & isValidHost) { // Type A and address is not null
 			rCode = 0; // No error condition
 			answerCount = 1;
-		} else if(!isTypeAReq) { // Not Type A
-			rCode = 4; // Not Implemented - The Name server does not support the requested kind of query.
+		} else if (!isTypeAReq) { // Not Type A
+			rCode = 4; // Not Implemented - The Name server does not support the requested kind of
+						// query.
 			answerCount = 0;
 		} else { // Type A but address is null
-			rCode = 3; // Name Error - Meaningful only for responses from an authoritative name server, this code 
-					   // signifies that the domain name referenced in the query does not exist.
+			rCode = 3; // Name Error - Meaningful only for responses from an authoritative name server,
+						// this code
+						// signifies that the domain name referenced in the query does not exist.
 			answerCount = 0;
 		} // End of if
-		
+
 		this.initializeHeaderSection();
 		this.initializeQuerySection();
 		this.initializeAnswerSection();
@@ -252,14 +267,14 @@ public class DNSMessage {
 
 	// Combine header, query, and answer sections into a single byte array
 	private void createResponse() {
-	    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-	    // Add each section
-	    outputStream.write(headerSection, 0, headerSection.length);
-	    outputStream.write(querySection, 0, querySection.length);
-	    outputStream.write(answerSection, 0, answerSection.length);
+		// Add each section
+		outputStream.write(headerSection, 0, headerSection.length);
+		outputStream.write(querySection, 0, querySection.length);
+		outputStream.write(answerSection, 0, answerSection.length);
 
-	    // Get the complete response message as a byte array
-	    responseMessage = outputStream.toByteArray();
+		// Get the complete response message as a byte array
+		responseMessage = outputStream.toByteArray();
 	} // ENd of method createResponse
 } // End of class DNSMessage
