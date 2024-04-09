@@ -1,11 +1,8 @@
 
 import java.net.*;
-import java.util.HashMap;
 
 public class DNSServer {
     // Variable declarations
-    private static HashMap<String, String> addressList;
-
     public static void main(String[] args) {
         addressList = new HashMap<String, String>();
         try {

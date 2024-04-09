@@ -2,6 +2,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 
 public class DNSMessage {
 	// Constants
@@ -25,8 +26,8 @@ public class DNSMessage {
 	private short answerCount;
 	private short nsCount;
 	private short arCount;
-	private byte id;
 	private int flags;
+	private byte id;
 	private byte opcode;
 	private byte aa;
 	private byte tc;
