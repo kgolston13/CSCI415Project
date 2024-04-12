@@ -214,10 +214,11 @@ public class DNSMessage {
 	} // End of method convertDomainToBytes
 
 	private boolean isTypeARequest() {
-		if (data.length < 12) {
+		if (data.length < 12) { // If request is not long enough to contain enough data for a DNS request
 			return false;
 		} // End of if
-			// Checking for 00 01 00 01 sequence to determine if request is type A or not
+		
+		// Checking for 00 01 00 01 sequence to determine if request is type A or not
 		int queryTypePosition = 12;
 		while (queryTypePosition + 4 <= data.length) {
 			if (data[queryTypePosition] == 0x00 && data[queryTypePosition + 1] == 0x01
@@ -230,10 +231,6 @@ public class DNSMessage {
 	} // End of method isTypeARequest
 
 	private void populateRequestData() {
-		if (data.length < 12) {
-			return;
-		} // End of if
-
 		id = (byte) (((data[0] & 0xFF) << 8) | (data[1] & 0xFF));
 		flags = ((data[2] & 0xFF) << 8) | (data[3] & 0xFF);
 		opcode = (byte) ((flags >> 11) & 0xF);
