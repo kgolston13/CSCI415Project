@@ -1,5 +1,6 @@
 import java.awt.FlowLayout;
 import java.awt.Font;
+
 import java.net.*;
 
 import javax.swing.JFrame;
@@ -16,7 +17,8 @@ public class DNSServer {
             while (true) {
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length);
                 server.receive(request);
-
+                // Create a seperate thread to handle the new request and prevent server
+                // congestion and timeouts.
                 Thread requestHandler = new Thread(() -> {
                     handleRequest(request, server, frame);
                 });
@@ -56,7 +58,7 @@ class ServerGUI extends JFrame {
         ++reqNum;
         requestLabel.setText("Requests: " + reqNum);
     }
-
+    
     public void incrementResponses() {
         ++resNum;
         responseLabel.setText("Responses: " + resNum);

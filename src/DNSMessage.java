@@ -77,6 +77,8 @@ public class DNSMessage {
 	// private Methods
 
 	private void initializeHeaderSection() {
+		// Byte array of size 12 for the header section where every byte is comrpised of
+		// specific values in specific bytes in accordance to RFC1035
 		headerSection = new byte[12];
 		headerSection[0] = (byte) ((id >> 8) & 0xFF);
 		headerSection[1] = (byte) (id & 0xFF);
@@ -92,6 +94,7 @@ public class DNSMessage {
 		headerSection[11] = (byte) (arCount & 0xFF);
 	} // End of method initializeHeaderSection
 
+	// Queries section, 4 bytes(Query type and class) plus requested domain size
 	private void initializeQuerySection() {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
@@ -110,13 +113,14 @@ public class DNSMessage {
 		querySection = outputStream.toByteArray();
 	} // End of method initializeQuerySection
 
+	// Answer section is default 12 bytes plus the size of the data
+	// we are sending back (4 since we're only accepting type A req using ipv4)
 	private void initializeAnswerSection() {
 		if (rCode != 0) { // If response is not 0, we do not add an answer section
 			answerSection = new byte[0];
 			return;
 		} // End of if
 
-		// Creating byte array for the answer section
 		int totalLength = 12 + RDLENGTH;
 		answerSection = new byte[totalLength];
 		int index = 0;
@@ -141,7 +145,7 @@ public class DNSMessage {
 
 		// Converting IP address to byte array
 		String[] addressParts = address.split("\\."); // Period delimiter
-		// Address field, (4 bytes for Ipv4)
+		// Address field, (4 bytes for Ipv4 since we're only accepting type A requests)
 		for (int i = 0; i < RDLENGTH; i++) {
 			answerSection[index++] = (byte) (Integer.parseInt(addressParts[i]) & 0xFF);
 		} // End of for
@@ -178,7 +182,7 @@ public class DNSMessage {
 		}
 
 		String addressFromDomain;
-		try {
+		try { // Ignore arpa requests
 			addressFromDomain = InetAddress.getByName(domain).getHostAddress();
 			if (domain.toLowerCase().endsWith("arpa") || domain.toLowerCase().endsWith("home")) {
 				isValidHost = false;
@@ -217,7 +221,7 @@ public class DNSMessage {
 		if (data.length < 12) { // If request is not long enough to contain enough data for a DNS request
 			return false;
 		} // End of if
-		
+
 		// Checking for 00 01 00 01 sequence to determine if request is type A or not
 		int queryTypePosition = 12;
 		while (queryTypePosition + 4 <= data.length) {
