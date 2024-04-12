@@ -51,7 +51,7 @@ public class DNSMessage {
 	// Constructor
 	public DNSMessage(byte[] data) {
 		this.data = data;
-		isTypeAReq = this.isTypeARequest();
+		this.isTypeAReq = this.isTypeARequest();
 		this.populateRequestData();
 		this.createResponse();
 	} // End of Constructor(byte[])
@@ -59,19 +59,19 @@ public class DNSMessage {
 	// Public Methods
 
 	public byte[] getResponse() {
-		return responseMessage;
+		return this.responseMessage;
 	} // End of method getResponse
 
 	public String getDomainName() {
-		return name;
+		return this.name;
 	} // End of method getDomainName
 
 	public boolean isTypeA() {
-		return isTypeAReq;
+		return this.isTypeAReq;
 	} // End of method isTypeA
 
 	public boolean isValidHostName() {
-		return isValidHost;
+		return this.isValidHost;
 	} // End of method isValidHostName
 
 	// private Methods
@@ -79,19 +79,19 @@ public class DNSMessage {
 	private void initializeHeaderSection() {
 		// Byte array of size 12 for the header section where every byte is comrpised of
 		// specific values in specific bytes in accordance to RFC1035
-		headerSection = new byte[12];
-		headerSection[0] = (byte) ((id >> 8) & 0xFF);
-		headerSection[1] = (byte) (id & 0xFF);
-		headerSection[2] = (byte) ((QR << 7) | (opcode << 3) | (aa << 2) | (tc << 1) | rd);
-		headerSection[3] = (byte) ((RA << 7) | (Z << 4) | rCode);
-		headerSection[4] = (byte) ((questionCount >> 8) & 0xFF);
-		headerSection[5] = (byte) (questionCount & 0xFF);
-		headerSection[6] = (byte) ((answerCount >> 8) & 0xFF);
-		headerSection[7] = (byte) (answerCount & 0xFF);
-		headerSection[8] = (byte) ((nsCount >> 8) & 0xFF);
-		headerSection[9] = (byte) (nsCount & 0xFF);
-		headerSection[10] = (byte) ((arCount >> 8) & 0xFF);
-		headerSection[11] = (byte) (arCount & 0xFF);
+		this.headerSection = new byte[12];
+		this.headerSection[0] = (byte) ((id >> 8) & 0xFF);
+		this.headerSection[1] = (byte) (id & 0xFF);
+		this.headerSection[2] = (byte) ((QR << 7) | (opcode << 3) | (aa << 2) | (tc << 1) | rd);
+		this.headerSection[3] = (byte) ((RA << 7) | (Z << 4) | rCode);
+		this.headerSection[4] = (byte) ((questionCount >> 8) & 0xFF);
+		this.headerSection[5] = (byte) (questionCount & 0xFF);
+		this.headerSection[6] = (byte) ((answerCount >> 8) & 0xFF);
+		this.headerSection[7] = (byte) (answerCount & 0xFF);
+		this.headerSection[8] = (byte) ((nsCount >> 8) & 0xFF);
+		this.headerSection[9] = (byte) (nsCount & 0xFF);
+		this.headerSection[10] = (byte) ((arCount >> 8) & 0xFF);
+		this.headerSection[11] = (byte) (arCount & 0xFF);
 	} // End of method initializeHeaderSection
 
 	// Queries section, 4 bytes(Query type and class) plus requested domain size
@@ -110,44 +110,44 @@ public class DNSMessage {
 		outputStream.write((QCLASS >> 8) & 0xFF);
 		outputStream.write(QCLASS & 0xFF);
 
-		querySection = outputStream.toByteArray();
+		this.querySection = outputStream.toByteArray();
 	} // End of method initializeQuerySection
 
 	// Answer section is default 12 bytes plus the size of the data
 	// we are sending back (4 since we're only accepting type A req using ipv4)
 	private void initializeAnswerSection() {
 		if (rCode != 0) { // If response is not 0, we do not add an answer section
-			answerSection = new byte[0];
+			this.answerSection = new byte[0];
 			return;
 		} // End of if
 
 		int totalLength = 12 + RDLENGTH;
-		answerSection = new byte[totalLength];
+		this.answerSection = new byte[totalLength];
 		int index = 0;
 
 		// Name field (Pointer, 2 bytes)
-		answerSection[index++] = (byte) 0xc0;
-		answerSection[index++] = (byte) 0x0c;
+		this.answerSection[index++] = (byte) 0xc0;
+		this.answerSection[index++] = (byte) 0x0c;
 		// Type field (2 bytes)
-		answerSection[index++] = (byte) ((QTYPE >> 8) & 0xFF);
-		answerSection[index++] = (byte) (QTYPE & 0xFF);
+		this.answerSection[index++] = (byte) ((QTYPE >> 8) & 0xFF);
+		this.answerSection[index++] = (byte) (QTYPE & 0xFF);
 		// Class field (2 bytes)
-		answerSection[index++] = (byte) ((QCLASS >> 8) & 0xFF);
-		answerSection[index++] = (byte) (QCLASS & 0xFF);
+		this.answerSection[index++] = (byte) ((QCLASS >> 8) & 0xFF);
+		this.answerSection[index++] = (byte) (QCLASS & 0xFF);
 		// TTL field (4 bytes)
-		answerSection[index++] = (byte) ((TTL >> 24) & 0xFF);
-		answerSection[index++] = (byte) ((TTL >> 16) & 0xFF);
-		answerSection[index++] = (byte) ((TTL >> 8) & 0xFF);
-		answerSection[index++] = (byte) (TTL & 0xFF);
+		this.answerSection[index++] = (byte) ((TTL >> 24) & 0xFF);
+		this.answerSection[index++] = (byte) ((TTL >> 16) & 0xFF);
+		this.answerSection[index++] = (byte) ((TTL >> 8) & 0xFF);
+		this.answerSection[index++] = (byte) (TTL & 0xFF);
 		// Data length field (2 bytes)
-		answerSection[index++] = (byte) ((RDLENGTH >> 8) & 0xFF);
-		answerSection[index++] = (byte) (RDLENGTH & 0xFF);
+		this.answerSection[index++] = (byte) ((RDLENGTH >> 8) & 0xFF);
+		this.answerSection[index++] = (byte) (RDLENGTH & 0xFF);
 
 		// Converting IP address to byte array
 		String[] addressParts = address.split("\\."); // Period delimiter
 		// Address field, (4 bytes for Ipv4 since we're only accepting type A requests)
 		for (int i = 0; i < RDLENGTH; i++) {
-			answerSection[index++] = (byte) (Integer.parseInt(addressParts[i]) & 0xFF);
+			this.answerSection[index++] = (byte) (Integer.parseInt(addressParts[i]) & 0xFF);
 		} // End of for
 
 	} // End of method initializeAnswerSection
@@ -160,7 +160,7 @@ public class DNSMessage {
 			// Pointer label so we recursively call to get each part of the domain
 			if ((length & 0xC0) == 0xC0) {
 				int pointer = ((length & 0x3F) << 8) | (data[offset++] & 0xFF);
-				getDomain(pointer);
+				this.getDomain(pointer);
 				return domainBuilder.toString();
 			}
 			// Regular label
@@ -185,11 +185,11 @@ public class DNSMessage {
 		try { // Ignore arpa requests
 			addressFromDomain = InetAddress.getByName(domain).getHostAddress();
 			if (domain.toLowerCase().endsWith("arpa") || domain.toLowerCase().endsWith("home")) {
-				isValidHost = false;
+				this.isValidHost = false;
 				return null;
 			}
 			System.out.println("Resolved address for domain " + domain + ": " + addressFromDomain);
-			isValidHost = true;
+			this.isValidHost = true;
 			return addressFromDomain;
 		} catch (UnknownHostException e) {
 			isValidHost = false;
@@ -235,39 +235,39 @@ public class DNSMessage {
 	} // End of method isTypeARequest
 
 	private void populateRequestData() {
-		id = (byte) (((data[0] & 0xFF) << 8) | (data[1] & 0xFF));
-		flags = ((data[2] & 0xFF) << 8) | (data[3] & 0xFF);
-		opcode = (byte) ((flags >> 11) & 0xF);
-		aa = (byte) ((flags >> 10) & 1);
-		tc = (byte) ((flags >> 9) & 1);
-		rd = (byte) ((flags >> 8) & 1);
-		questionCount = (short) (((data[4] & 0xFF) << 8) | (data[5] & 0xFF));
-		nsCount = (short) (((data[8] & 0xFF) << 8) | (data[9] & 0xFF));
-		arCount = (short) (((data[10] & 0xFF) << 8) | (data[11] & 0xFF));
-		name = this.getDomain(12);
-		address = this.getAddress(name);
+		this.id = (byte) (((data[0] & 0xFF) << 8) | (data[1] & 0xFF));
+		this.flags = ((data[2] & 0xFF) << 8) | (data[3] & 0xFF);
+		this.opcode = (byte) ((flags >> 11) & 0xF);
+		this.aa = (byte) ((flags >> 10) & 1);
+		this.tc = (byte) ((flags >> 9) & 1);
+		this.rd = (byte) ((flags >> 8) & 1);
+		this.questionCount = (short) (((data[4] & 0xFF) << 8) | (data[5] & 0xFF));
+		this.nsCount = (short) (((data[8] & 0xFF) << 8) | (data[9] & 0xFF));
+		this.arCount = (short) (((data[10] & 0xFF) << 8) | (data[11] & 0xFF));
+		this.name = this.getDomain(12);
+		this.address = this.getAddress(name);
 
 		if (isTypeAReq & isValidHost) { // Type A and address is not null
-			rCode = 0; // No error condition
-			answerCount = 1;
+			this.rCode = 0; // No error condition
+			this.answerCount = 1;
 		} else if (!isTypeAReq) { // Not Type A
-			rCode = 4; // Not Implemented - The Name server does not support the requested kind of
-						// query.
-			answerCount = 0;
+			this.rCode = 4; // Not Implemented - The Name server does not support the requested kind of
+							// query.
+			this.answerCount = 0;
 		} else { // Type A but address is null
-			rCode = 3; // Name Error - Meaningful only for responses from an authoritative name server,
-						// this code
-						// signifies that the domain name referenced in the query does not exist.
-			answerCount = 0;
+			this.rCode = 3; // Name Error - Meaningful only for responses from an authoritative name server,
+							// this code
+							// signifies that the domain name referenced in the query does not exist.
+			this.answerCount = 0;
 		} // End of if
 
+	} // End of method populateRequestData
+
+	// Initialize and combine header, query, and answer sections into a single byte array
+	private void createResponse() {
 		this.initializeHeaderSection();
 		this.initializeQuerySection();
 		this.initializeAnswerSection();
-	} // End of method populateRequestData
-
-	// Combine header, query, and answer sections into a single byte array
-	private void createResponse() {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 		// Add each section
@@ -276,6 +276,6 @@ public class DNSMessage {
 		outputStream.write(answerSection, 0, answerSection.length);
 
 		// Get the complete response message as a byte array
-		responseMessage = outputStream.toByteArray();
+		this.responseMessage = outputStream.toByteArray();
 	} // ENd of method createResponse
 } // End of class DNSMessage
