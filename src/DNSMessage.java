@@ -236,8 +236,7 @@ public class DNSMessage {
 	} // End of method isTypeARequest
 
 	private void populateRequestData() {
-		this.id = (short) (((data[0] & 0xFF) << 8) | (data[1] & 0xFF));
-		
+		this.id = (short) (((data[0] & 0xFF) << 8) | (data[1] & 0xFF));	
 		this.flags = ((data[2] & 0xFF) << 8) | (data[3] & 0xFF);
 		this.opcode = (byte) ((flags >> 11) & 0xF);
 		this.aa = (byte) ((flags >> 10) & 1);
