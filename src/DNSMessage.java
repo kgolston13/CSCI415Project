@@ -26,8 +26,8 @@ public class DNSMessage {
 	private short answerCount;
 	private short nsCount;
 	private short arCount;
+	private short id;
 	private int flags;
-	private byte id;
 	private byte opcode;
 	private byte aa;
 	private byte tc;
@@ -43,7 +43,7 @@ public class DNSMessage {
 	private static final HashMap<String, String> addressList = new HashMap<String, String>();
 
 	static {
-		addressList.put("key1", "ip");
+		addressList.put("www.paypal.com", "172.17.158.166");
 		addressList.put("key2", "ip");
 		addressList.put("key3", "ip");
 	}
@@ -81,6 +81,7 @@ public class DNSMessage {
 		// specific values in specific bytes in accordance to RFC1035
 		this.headerSection = new byte[12];
 		this.headerSection[0] = (byte) ((id >> 8) & 0xFF);
+		System.out.println("Hex representation: " + Integer.toHexString(this.headerSection[0]));
 		this.headerSection[1] = (byte) (id & 0xFF);
 		this.headerSection[2] = (byte) ((QR << 7) | (opcode << 3) | (aa << 2) | (tc << 1) | rd);
 		this.headerSection[3] = (byte) ((RA << 7) | (Z << 4) | rCode);
@@ -235,7 +236,8 @@ public class DNSMessage {
 	} // End of method isTypeARequest
 
 	private void populateRequestData() {
-		this.id = (byte) (((data[0] & 0xFF) << 8) | (data[1] & 0xFF));
+		this.id = (short) (((data[0] & 0xFF) << 8) | (data[1] & 0xFF));
+		
 		this.flags = ((data[2] & 0xFF) << 8) | (data[3] & 0xFF);
 		this.opcode = (byte) ((flags >> 11) & 0xF);
 		this.aa = (byte) ((flags >> 10) & 1);
@@ -247,7 +249,7 @@ public class DNSMessage {
 		this.name = this.getDomain(12);
 		this.address = this.getAddress(name);
 
-		if (isTypeAReq & isValidHost) { // Type A and address is not null
+		if (isTypeAReq && isValidHost) { // Type A and address is not null
 			this.rCode = 0; // No error condition
 			this.answerCount = 1;
 		} else if (!isTypeAReq) { // Not Type A
