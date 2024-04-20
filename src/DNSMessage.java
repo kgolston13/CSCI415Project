@@ -265,7 +265,8 @@ public class DNSMessage {
 
 	} // End of method populateRequestData
 
-	// Initialize and combine header, query, and answer sections into a single byte array
+	// Initialize and combine header, query, and answer sections into a single byte
+	// array
 	private void createResponse() {
 		this.initializeHeaderSection();
 		this.initializeQuerySection();

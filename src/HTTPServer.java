@@ -23,16 +23,27 @@ public class HTTPServer {
             String requestMessageLine2 = In.nextLine();
             System.out.println("Client sent: " + requestMessageLine1 + "\n" + requestMessageLine2);
 
-            String[] requestedSite = requestMessageLine2.split(" ");
-            String fileName = requestedSite[1] + ".html";
+            String[] requestMessageLine1Array = requestMessageLine1.split(" ");
 
-            File file = new File("data" + fileName);
+            String[] requestedSiteArray = requestMessageLine2.split(" ");
+            String requestedSite = requestedSiteArray[1];
+            String urlName = requestedSite.substring(4, requestedSite.length() - 4);
+            String fileName = "";
+
+            if (requestMessageLine1Array[1].equals("/")) {
+                fileName = "sites/" + urlName + ".html";
+            } else {
+                fileName = "sites" + requestMessageLine1Array[1];
+            }
+
+            File file = new File(fileName);
 
             HashMap<String, String> headers = new HashMap<String, String>();
             headers.put(".jpg", "image/jpg");
             headers.put(".png", "image/png");
             headers.put(".html", "text/html");
             headers.put(".txt", "text/plain");
+            headers.put(".css", "text/css");
 
             // Send a response back
             String statusLine = "HTTP/1.1 200 OK\r\n";
@@ -49,7 +60,8 @@ public class HTTPServer {
                 fileStream.close();
             } catch (FileNotFoundException e) {
                 String notFound = "HTTP/1.1 404 Not Found\r\n";
-                Out.writeBytes(notFound + endheader + "<h1>404 Error</h1> <p>The file you were looking for was not found :(</p>");
+                Out.writeBytes(notFound + endheader
+                        + "<h1>404 Error</h1> <p>The file you were looking for was not found :(</p>");
 
             }
             // Close all connections
