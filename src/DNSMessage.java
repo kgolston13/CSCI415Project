@@ -42,10 +42,12 @@ public class DNSMessage {
 
 	private static final HashMap<String, String> addressList = new HashMap<String, String>();
 
+	static String HTTPServerIp = "";
+
 	static {
-		addressList.put("www.paypal.com", "172.17.158.166");
-		addressList.put("key2", "ip");
-		addressList.put("key3", "ip");
+		addressList.put("www.paypals.com", HTTPServerIp);
+		addressList.put("www.googles.com", HTTPServerIp);
+		addressList.put("www.uscas.edu", HTTPServerIp);
 	}
 
 	// Constructor
